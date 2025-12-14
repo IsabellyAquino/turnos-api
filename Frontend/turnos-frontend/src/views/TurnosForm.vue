@@ -15,7 +15,7 @@ const form = ref({
   motivo: '',
   status: 'Pendente',
   analistaId: 1,  // Id do analista (use os do seed)
-  projetoId: 1,   // opcional
+  projetoId: null,   // opcional
   observacoes: '',
   ativo: true
 })
@@ -100,58 +100,220 @@ async function salvar() {
 
 
 <template>
-  <section class="container">
-    <h1>Novo Turno</h1>
+  <!-- FUNDO DA PÁGINA -->
+  <section class="page">
 
-    <div class="grid">
-      <label>Data
-        <input v-model="form.data" type="date" required />
-      </label>
-      <label>Analista Id
-        <input v-model.number="form.analistaId" type="number" required />
-      </label>
-      <label>Hora Início
-        <input v-model="form.horaInicio" type="time" step="60" required />
-      </label>
-      <label>Hora Fim
-        <input v-model="form.horaFim" type="time" step="60" required />
-      </label>
-      <label>Motivo
-        <input v-model="form.motivo" type="text" required />
-      </label>
-      <label>Status
-        <select v-model="form.status">
-          <option value="Concluido">Concluído</option>
-          <option value="Pendente">Pendente</option>
-          <option value="Cancelado">Cancelado</option>
-        </select>
-      </label>
-      <label>Projeto Id (opcional)
-        <input v-model.number="form.projetoId" type="number" />
-      </label>
-      <label>Observações
-        <input v-model="form.observacoes" type="text" />
-      </label>
-      <label>Ativo
-        <input v-model="form.ativo" type="checkbox" />
-      </label>
+    <!-- CARD PRINCIPAL -->
+    <div class="card">
+
+      <!-- TÍTULO -->
+      <h1>Novo Turno</h1>
+
+      <!-- FORMULÁRIO -->
+       <div class="grid">
+
+        <label>
+          Data
+          <input type="date" required v-model="form.data" />
+        </label>
+
+        <label>
+          Analista ID
+          <input type="number" required v-model.number="form.analistaId" />
+        </label>
+
+        <label>
+          Hora Início
+          <input type="time" required v-model="form.horaInicio" />
+        </label>
+
+        <label>
+          Hora Fim
+          <input type="time" required v-model="form.horaFim" />
+        </label>
+
+        <!-- Campo grande -->
+        <label class="span-2">
+          Motivo
+          <input type="text" required v-model="form.motivo" />
+        </label>
+
+        <label>
+          Status
+          <select v-model="form.status">
+            <option>Pendente</option>
+            <option>Concluido</option>
+            <option>Cancelado</option>
+          </select>
+        </label>
+
+        <label>
+          Projeto ID (Opcional)
+          <input type="number" v-model.number="form.projetoId" />
+        </label>
+
+        <!-- Campo grande -->
+        <label class="span-2">
+          Observações (Opcional)
+          <input type="text" v-model="form.observacoes" />
+        </label>
+
+        <!-- Checkbox -->
+        <label class="checkbox">
+          <input type="checkbox" v-model="form.ativo" />
+          Ativo
+        </label>
+
+      </div>
+
+      <!-- AÇÕES -->
+      <div class="acoes">
+        <button class="btn primary" @click="salvar">Salvar</button>
+        <router-link to="/">
+          <button class="btn ghost">Cancelar</button>
+        </router-link>
+      </div>
+
+      <!-- FEEDBACK -->
+      <p v-if="erro" class="erro">{{ erro }}</p>
+      <p v-if="sucesso" class="sucesso">{{ sucesso }}</p>
+
     </div>
-
-    <div class="acoes">
-      <button @click="salvar">Salvar</button>
-      <router-link to="/"><button>Cancelar</button></router-link>
-    </div>
-
-    <p v-if="erro" class="erro">{{ erro }}</p>
-    <p v-if="sucesso" class="sucesso">{{ sucesso }}</p>
   </section>
 </template>
 
 <style scoped>
-.container { padding: 16px; max-width: 800px; margin: 0 auto; }
-.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.acoes { margin-top: 16px; display: flex; gap: 8px; }
-.erro { color: #b00020; }
-.sucesso { color: #2e7d32; }
-label { display: flex; flex-direction: column; gap: 6px; }
+/* FUNDO */
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background:
+    radial-gradient(circle at top left, #7b1fa2, transparent 40%),
+    radial-gradient(circle at bottom right, #4a148c, transparent 45%),
+    #0e0b14;
+  padding: 24px;
+}
+
+/* CARD PRINCIPAL */
+.card {
+  width: 100%;
+  max-width: 850px;
+  background: rgba(20, 16, 30, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.6);
+}
+
+/* TÍTULO */
+h1 {
+  color: #fff;
+  font-size: 1.7rem;
+  margin-bottom: 28px;
+  padding-left: 14px;
+}
+
+/* GRID DO FORM */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 22px;
+}
+
+/* Campo ocupando 2 colunas */
+.span-2 {
+  grid-column: span 2;
+}
+
+/* LABELS E INPUTS */
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: #c7b7e2;
+  gap: 6px;
+}
+
+input,
+select {
+  background: #1c162b;
+  border: 1px solid #3a2f55;
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: #fff;
+  font-size: 0.95rem;
+  transition: all .2s;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #bb86fc;
+  box-shadow: 0 0 0 2px rgba(187,134,252,.3);
+}
+
+/* CHECKBOX */
+.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+}
+
+/* BOTÕES */
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.btn {
+  padding: 10px 22px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  transition: all .2s;
+}
+
+/* Botão principal roxo */
+.btn.primary {
+  background: linear-gradient(135deg, #bb86fc, #7b1fa2);
+  color: #fff;
+}
+
+.btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(187,134,252,.45);
+}
+
+/* Botão secundário */
+.btn.ghost {
+  background: transparent;
+  color: #c7b7e2;
+  border: 1px solid #3a2f55;
+}
+
+.btn.ghost:hover {
+  background: #221a35;
+}
+
+/* FEEDBACK */
+.erro {
+  margin-top: 18px;
+  color: #ef5350;
+}
+
+.sucesso {
+  margin-top: 18px;
+  color: #66bb6a;
+}
 </style>
