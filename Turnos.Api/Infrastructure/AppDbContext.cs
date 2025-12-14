@@ -39,6 +39,22 @@ namespace Turnos.Api.Infrastructure
             modelBuilder.Entity<Turno>()
                 .Property(t => t.Status)
                 .HasConversion<int>();
+                
+            // Isso permite ORDER BY/WHERE diretamente no banco, sem NotSupportedException.
+            modelBuilder.Entity<Turno>()
+                .Property(t => t.HoraInicio)
+                .HasConversion(
+                    v => v.Ticks,                 // grava como inteiro
+                    v => TimeSpan.FromTicks(v))   // lê como TimeSpan
+                .HasColumnType("INTEGER");
+
+            modelBuilder.Entity<Turno>()
+                .Property(t => t.HoraFim)
+                .HasConversion(
+                    v => v.Ticks,
+                    v => TimeSpan.FromTicks(v))
+                .HasColumnType("INTEGER");
+
         }
     }
 }

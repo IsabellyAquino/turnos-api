@@ -134,3 +134,4 @@ C:\Users\isabelly.aquino\turnos-api\Turnos.Api\obj\Debug\net8.0\refint\Turnos.Ap
 C:\Users\isabelly.aquino\turnos-api\Turnos.Api\obj\Debug\net8.0\Turnos.Api.pdb
 C:\Users\isabelly.aquino\turnos-api\Turnos.Api\obj\Debug\net8.0\Turnos.Api.genruntimeconfig.cache
 C:\Users\isabelly.aquino\turnos-api\Turnos.Api\obj\Debug\net8.0\ref\Turnos.Api.dll
+C:\Users\isabelly.aquino\turnos-api\Turnos.Api\obj\Debug\net8.0\Turnos.Api.sourcelink.json
