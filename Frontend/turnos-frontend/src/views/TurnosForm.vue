@@ -7,6 +7,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+// Estado do formulário
 const form = ref({
   data: '',
   horaInicio: '',
@@ -22,33 +23,81 @@ const form = ref({
 const erro = ref('')
 const sucesso = ref('')
 
+//Normaliza uma string de hora para o formato HH:mm:ss
+function toHHmmss(h) {
+  if (!h) return ''
+  // Já possui segundos? Mantém.
+  if (/^\d{1,2}:\d{2}:\d{2}$/.test(h)) {
+    const [hh, mm, ss] = h.split(':')
+    return `${hh.padStart(2, '0')}:${mm}:${ss}`
+  }
+  // Formato comum de <input type="time">: "HH:mm" (ou "H:mm")
+  if (/^\d{1,2}:\d{2}$/.test(h)) {
+    const [hh, mm] = h.split(':')
+    return `${hh.padStart(2, '0')}:${mm}:00`
+  }
+  // Último recurso: tenta parsear algo diferente (evitar quebra silenciosa)
+  try {
+    const parts = h.split(':')
+    const hh = (parts[0] ?? '0').padStart(2, '0')
+    const mm = (parts[1] ?? '0').padStart(2, '0')
+    const ss = (parts[2] ?? '0').padStart(2, '0')
+    return `${hh}:${mm}:${ss}`
+  } catch {
+    return h // devolve como veio; backend pode validar e informar erro
+  }
+}
+
+
+//Normaliza a data "YYYY-MM-DD" para "YYYY-MM-DDT00:00:00",
+//mantendo compatibilidade com DTO que usa DateTime.
+function toDateAtMidnight(d) {
+  if (!d) return null
+  // Evita duplicar T00:00:00 se já estiver no formato ISO
+  if (/^\d{4}-\d{2}-\d{2}T/.test(d)) return d
+  return `${d}T00:00:00`
+}
+
+
 async function salvar() {
   try {
     erro.value = ''
     sucesso.value = ''
 
-    // Ajuste de formato: data deve ter "T00:00:00"
     const payload = {
       ...form.value,
-      data: form.value.data ? `${form.value.data}T00:00:00` : null,
-      horaInicio: form.value.horaInicio.length === 5 ? form.value.horaInicio + ':00' : form.value.horaInicio,
-      horaFim: form.value.horaFim.length === 5 ? form.value.horaFim + ':00' : form.value.horaFim
+      
+      data: toDateAtMidnight(form.value.data),
+      horaInicio: toHHmmss(form.value.horaInicio),
+      horaFim: toHHmmss(form.value.horaFim),
+      // Assegurar tipos corretos
+      analistaId: Number(form.value.analistaId),
+      projetoId: form.value.projetoId ? Number(form.value.projetoId) : null,
+      ativo: !!form.value.ativo
     }
 
     const { data } = await api.post('/turnos', payload)
 
     if (data.success) {
       sucesso.value = data.message || 'Turno criado com sucesso.'
-      // Redireciona para a listagem após salvar
+      // Redireciona para a listagem após salvar (pequeno delay para usuário ver feedback)
       setTimeout(() => router.push('/'), 800)
     } else {
+      // Mostra erros de negócio agrupados (vindos do ApiResponse.Fail)
       erro.value = (data.errors && data.errors.join('; ')) || data.message || 'Falha ao criar turno.'
     }
   } catch (e) {
-    erro.value = e?.response?.data?.message || e.message
+    // Diferenciar erro de rede (CORS/HTTPS) de erro de API (4xx/5xx com body)
+    if (e?.response) {
+      const d = e.response.data
+      erro.value = (d?.errors && d.errors.join('; ')) || d?.message || `Erro ${e.response.status}`
+    } else {
+      erro.value = e?.message || 'Network Error'
+    }
   }
 }
 </script>
+
 
 <template>
   <section class="container">

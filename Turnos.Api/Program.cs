@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
     {
+        // Serializa enums como "Pendente", "Concluido" etc
         opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
@@ -28,9 +29,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // 5) Configurar CORS para permitir chamadas do frontend em localhost
-    //Compartilhamento de Recursos entre Origens), 
-    //é um mecanismo de segurança de navegador que permite que um site peça recursos (como fontes ou dados de API) de um domínio diferente
-    // Antes de builder.Build():
     var corsPolicy = "AllowLocalDev";
     builder.Services.AddCors(opts =>
     {
@@ -46,11 +44,9 @@ builder.Services.AddSwaggerGen();
     });
 
     
-
-
 var app = builder.Build();
 
-
+app.UseCors(corsPolicy);
 
 // 6) Ativar Swagger em tempo de execução
 app.UseSwagger();
